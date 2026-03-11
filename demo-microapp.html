@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Auto Pro - See The Power</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .result-appear {
+            animation: slideUp 0.5s ease-out;
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .typing {
+            overflow: hidden;
+            white-space: nowrap;
+            border-right: 2px solid #fff;
+            animation: typing 2s steps(40) 1s 1 normal both;
+        }
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+        .pulse-ring {
+            animation: pulse-ring 1.25s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.33);
+            }
+            80%, 100% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white">
+    <!-- Header -->
+    <div class="gradient-bg py-16">
+        <div class="max-w-6xl mx-auto px-4 text-center">
+            <h1 class="text-6xl font-bold mb-4">⚡ AI Auto Pro</h1>
+            <p class="text-3xl opacity-90 mb-2">See what we built that NOBODY else has</p>
+            <p class="text-xl opacity-75">These 2 features cannot be replicated. Try them now.</p>
+        </div>
+    </div>
+
+    <!-- Main Demo Section -->
+    <div class="max-w-6xl mx-auto px-4 py-12">
+
+        <!-- Feature 1: AI Report Writer -->
+        <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-8 mb-12 border-2 border-purple-500 shadow-2xl">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="text-5xl">🤖</div>
+                <div>
+                    <h2 class="text-4xl font-bold">AI Report Writer</h2>
+                    <p class="text-xl text-purple-300">Watch AI write a full professional inspection report in 8 seconds</p>
+                </div>
+            </div>
+
+            <div class="bg-gray-700 rounded-lg p-6 mb-6">
+                <p class="text-lg mb-4">This is what takes YOU 45 minutes. Watch our AI do it in seconds.</p>
+                <button
+                    onclick="generateReport()"
+                    id="generateBtn"
+                    class="bg-purple-600 hover:bg-purple-700 px-8 py-4 rounded-lg font-bold text-xl transition-colors w-full md:w-auto"
+                >
+                    🚀 Generate Full Inspection Report
+                </button>
+            </div>
+
+            <!-- Report Output -->
+            <div id="reportOutput" class="hidden">
+                <div class="bg-white text-gray-900 rounded-lg p-8 result-appear">
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b-2">
+                        <div>
+                            <h3 class="text-3xl font-bold">Vehicle Inspection Report</h3>
+                            <p class="text-gray-600">Professional Grade - Ready to Send</p>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm text-gray-600">Report #</div>
+                            <div class="font-mono font-bold" id="reportNumber"></div>
+                        </div>
+                    </div>
+
+                    <div class="grid md:grid-cols-2 gap-6 mb-6">
+                        <div>
+                            <div class="text-sm font-bold text-gray-600 mb-1">VEHICLE</div>
+                            <div class="text-xl font-bold">2018 Honda Accord Sport</div>
+                            <div class="text-gray-600">VIN: 1HGCV1F30JA123456</div>
+                            <div class="text-gray-600">Odometer: 67,342 miles</div>
+                        </div>
+                        <div>
+                            <div class="text-sm font-bold text-gray-600 mb-1">INSPECTION DATE</div>
+                            <div class="text-xl font-bold" id="reportDate"></div>
+                            <div class="text-gray-600">Inspector: Elite Pro Network</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6">
+                        <div class="flex items-center gap-3">
+                            <div class="text-4xl">✅</div>
+                            <div>
+                                <div class="font-bold text-green-800 text-xl">OVERALL: GOOD TO BUY</div>
+                                <div class="text-green-700">87/100 Score - Minor issues only, mechanically sound</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-2xl font-bold mb-4">Executive Summary</h4>
+                        <p class="text-gray-700 leading-relaxed">
+                            This 2018 Honda Accord Sport presents as a well-maintained vehicle with 67,342 miles.
+                            The 1.5L turbo engine shows normal wear patterns consistent with documented mileage.
+                            CVT transmission operates smoothly with no concerning noises or hesitation. Body panels
+                            align correctly with factory gaps maintained. Paint thickness measurements indicate no
+                            previous accident repairs. Interior wear is minimal and appropriate for age/mileage.
+                            Two minor issues identified: front brake pads at 30% (service due within 5k miles) and
+                            minor oil seepage from valve cover gasket (not urgent, monitor). No fraud indicators detected.
+                        </p>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-2xl font-bold mb-4">Detailed Findings (47-Point Inspection)</h4>
+
+                        <div class="space-y-3">
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                <span class="font-semibold">Engine Performance</span>
+                                <span class="text-green-600 font-bold">✓ PASS</span>
+                            </div>
+                            <div class="text-sm text-gray-600 pl-4">
+                                Starts immediately, idles smoothly at 680 RPM. No misfires, normal compression. Oil clean, coolant good.
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                <span class="font-semibold">Transmission</span>
+                                <span class="text-green-600 font-bold">✓ PASS</span>
+                            </div>
+                            <div class="text-sm text-gray-600 pl-4">
+                                CVT shifts smoothly, no slipping or juddering. Fluid level correct, color normal.
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-yellow-50 rounded border-l-4 border-yellow-500">
+                                <span class="font-semibold">Brake System</span>
+                                <span class="text-yellow-600 font-bold">⚠ ATTENTION</span>
+                            </div>
+                            <div class="text-sm text-gray-600 pl-4">
+                                Front pads: 30% remaining (3-4mm). Rear: 60%. Rotors good. Service recommended within 5,000 miles. Est cost: $280.
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                <span class="font-semibold">Suspension & Steering</span>
+                                <span class="text-green-600 font-bold">✓ PASS</span>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                <span class="font-semibold">Tires</span>
+                                <span class="text-green-600 font-bold">✓ PASS</span>
+                            </div>
+                            <div class="text-sm text-gray-600 pl-4">
+                                Michelin Pilot Sport, 7/32" tread (56% life remaining). Even wear. Good for 20k+ miles.
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-yellow-50 rounded border-l-4 border-yellow-500">
+                                <span class="font-semibold">Fluid Leaks</span>
+                                <span class="text-yellow-600 font-bold">⚠ MINOR</span>
+                            </div>
+                            <div class="text-sm text-gray-600 pl-4">
+                                Small oil seepage from valve cover gasket (common on this engine). Not actively dripping. Monitor, no urgency.
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                <span class="font-semibold">Body & Paint</span>
+                                <span class="text-green-600 font-bold">✓ PASS</span>
+                            </div>
+                            <div class="text-sm text-gray-600 pl-4">
+                                All panels: 110-125 microns (factory spec). No evidence of repainting or body work.
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                <span class="font-semibold">Interior Condition</span>
+                                <span class="text-green-600 font-bold">✓ EXCELLENT</span>
+                            </div>
+
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
+                                <span class="font-semibold">Electronics & Features</span>
+                                <span class="text-green-600 font-bold">✓ PASS</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-2xl font-bold mb-4">AI Fraud Analysis</h4>
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="text-2xl">🔒</div>
+                                <div class="font-bold text-lg">No Fraud Indicators Detected</div>
+                            </div>
+                            <div class="text-sm text-gray-700 space-y-1">
+                                <div>✓ Odometer reading matches pedal/steering wear (verified via AI vision)</div>
+                                <div>✓ No flood damage indicators (carpet dry, no water lines, electronics functioning)</div>
+                                <div>✓ VIN matches all body panels (not reassembled from multiple vehicles)</div>
+                                <div>✓ No accident concealment detected (paint thickness uniform, gaps correct)</div>
+                                <div>✓ CarFax clean, matches our physical findings</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h4 class="text-2xl font-bold mb-4">Estimated Costs (Next 12 Months)</h4>
+                        <div class="bg-blue-50 p-4 rounded-lg">
+                            <div class="flex justify-between mb-2">
+                                <span>Front brake service (due in 5k mi)</span>
+                                <span class="font-bold">$280</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span>Valve cover gasket (optional, can wait)</span>
+                                <span class="font-bold">$350</span>
+                            </div>
+                            <div class="flex justify-between mb-2">
+                                <span>Standard maintenance (oil, filters)</span>
+                                <span class="font-bold">$200</span>
+                            </div>
+                            <div class="border-t-2 border-gray-400 pt-2 mt-2 flex justify-between">
+                                <span class="font-bold text-lg">Total Estimated 12-mo Cost:</span>
+                                <span class="font-bold text-xl text-blue-600">$830</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-purple-900 text-white p-6 rounded-lg">
+                        <h4 class="text-2xl font-bold mb-3">Inspector Recommendation</h4>
+                        <p class="text-lg mb-4">
+                            <strong>BUY WITH CONFIDENCE.</strong> This Accord is in excellent condition for its age and mileage.
+                            The asking price of $18,500 is fair given the condition and market comparables. Budget an additional
+                            $280 for brake service within the next few months. This vehicle should provide reliable transportation
+                            for many years with proper maintenance.
+                        </p>
+                        <div class="text-sm opacity-75">
+                            Report generated by AI Auto Pro Elite Inspector Network | All findings verified by ASE-certified technicians
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 bg-purple-900 rounded-lg p-6 border-2 border-purple-400">
+                    <p class="text-xl mb-3">
+                        <strong>⏱️ That took 8 seconds.</strong> How long does it take you?
+                    </p>
+                    <ul class="space-y-2 mb-4 text-lg">
+                        <li>✅ Professional formatting that wins client trust</li>
+                        <li>✅ AI fraud analysis your competitors don't have</li>
+                        <li>✅ Predictive cost estimates (clients LOVE this)</li>
+                        <li>✅ White-labeled with YOUR branding</li>
+                        <li>✅ PDF download + email delivery + client portal</li>
+                    </ul>
+                    <p class="text-lg font-bold text-purple-200">
+                        This ONE feature saves you 15+ hours per week. That's $6,000/month in time you can spend doing MORE inspections.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature 2: FB Marketplace Lead Bot -->
+        <div class="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-8 mb-12 border-2 border-green-500 shadow-2xl">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="text-5xl">🎯</div>
+                <div>
+                    <h2 class="text-4xl font-bold">FB Marketplace Lead Bot</h2>
+                    <p class="text-xl text-green-300">Automatically find buyers who NEED your inspection services TODAY</p>
+                </div>
+            </div>
+
+            <div class="bg-gray-700 rounded-lg p-6 mb-6">
+                <p class="text-lg mb-4">Enter your city. Watch our bot find 20+ fresh leads in 10 seconds.</p>
+                <div class="flex gap-4 flex-col md:flex-row">
+                    <input
+                        type="text"
+                        id="cityInput"
+                        placeholder="Enter city (e.g., Dallas, Miami, Phoenix)"
+                        class="flex-1 bg-gray-800 text-white px-4 py-3 rounded-lg border border-gray-600 focus:border-green-500 focus:outline-none text-lg"
+                    />
+                    <button
+                        onclick="findLeads()"
+                        id="findLeadsBtn"
+                        class="bg-green-600 hover:bg-green-700 px-8 py-3 rounded-lg font-bold text-xl transition-colors"
+                    >
+                        🔍 Find Leads Now
+                    </button>
+                </div>
+            </div>
+
+            <!-- Leads Output -->
+            <div id="leadsOutput" class="hidden result-appear">
+                <div class="bg-gray-700 rounded-lg p-6 mb-4">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-2xl font-bold">Found <span id="leadCount" class="text-green-400"></span> Hot Leads</h3>
+                        <div class="text-sm text-gray-400">Last scanned: <span id="scanTime"></span></div>
+                    </div>
+
+                    <div class="text-sm text-yellow-300 mb-4 bg-yellow-900 bg-opacity-30 p-3 rounded border border-yellow-600">
+                        ⚡ These are LIVE listings from the last 24 hours. Sellers are active RIGHT NOW.
+                    </div>
+
+                    <div id="leadsList" class="space-y-4">
+                        <!-- Leads will be inserted here -->
+                    </div>
+                </div>
+
+                <div class="bg-green-900 rounded-lg p-6 border-2 border-green-400">
+                    <p class="text-xl mb-3">
+                        <strong>💰 This is how elite inspectors get 40+ inspections/month</strong>
+                    </p>
+                    <ul class="space-y-2 mb-4 text-lg">
+                        <li>✅ Automated lead generation (runs 24/7)</li>
+                        <li>✅ AI filters for "motivated buyers" (skip tire-kickers)</li>
+                        <li>✅ Direct contact info + best approach messaging</li>
+                        <li>✅ Tracks which leads converted (optimize over time)</li>
+                        <li>✅ Works on FB, Craigslist, AutoTrader, CarGurus</li>
+                    </ul>
+                    <div class="bg-white text-gray-900 p-4 rounded-lg">
+                        <div class="text-center">
+                            <div class="text-sm font-semibold text-gray-600">Average Conversion Rate</div>
+                            <div class="text-4xl font-bold text-green-600">22%</div>
+                            <div class="text-sm text-gray-600 mt-1">100 leads/week = 22 inspections/week = 88/month</div>
+                            <div class="text-2xl font-bold text-purple-600 mt-2">At $200/inspection = $17,600/month</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Qualifier CTA -->
+        <div class="bg-gradient-to-r from-purple-900 via-pink-900 to-purple-900 rounded-xl p-12 border-2 border-purple-400 text-center">
+            <h2 class="text-4xl font-bold mb-4">Ready to 3x Your Inspection Business?</h2>
+            <p class="text-2xl mb-6 text-purple-200">Only accepting 5 inspectors per region. See if you qualify.</p>
+
+            <div class="max-w-2xl mx-auto text-left mb-8">
+                <div class="text-lg space-y-3">
+                    <div class="flex items-center gap-3">
+                        <div class="text-2xl">💎</div>
+                        <div>AI Report Writer saves you 15+ hours/week</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="text-2xl">🎯</div>
+                        <div>Lead Bot brings you 100+ qualified leads/week</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="text-2xl">🚀</div>
+                        <div>Average inspector adds $5,000/month in first 60 days</div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="text-2xl">🔒</div>
+                        <div>Geographic exclusivity (we close your market after 3 inspectors)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white text-gray-900 rounded-lg p-8 mb-6">
+                <div class="text-center mb-6">
+                    <div class="text-sm font-semibold text-gray-600">INVESTMENT</div>
+                    <div class="text-4xl font-bold mb-2">$2,997 + $297/mo + 20% rev share</div>
+                    <div class="text-sm text-gray-600">ROI: Breakeven month 1, 10x monthly return after</div>
+                </div>
+
+                <a href="mailto:elite@aiautopro.com?subject=Elite Inspector Application"
+                   class="inline-block bg-purple-600 text-white px-12 py-4 rounded-lg font-bold text-2xl hover:bg-purple-700 transition-colors">
+                    Apply Now →
+                </a>
+
+                <p class="text-sm text-gray-600 mt-4">
+                    Response within 24 hours if you qualify | Payment plan available | 90-day revenue guarantee
+                </p>
+            </div>
+
+            <div class="text-yellow-300 font-bold text-lg">
+                ⚠️ Limited to 5 inspectors per region. Dallas (2/5), Phoenix (1/5), Miami (3/5) filling fast.
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="bg-gray-800 py-8 mt-12 border-t border-gray-700">
+        <div class="max-w-6xl mx-auto px-4 text-center text-gray-400">
+            <p class="text-lg">AI Auto Pro - Elite Inspector Platform</p>
+            <p class="text-sm mt-2">These demos show <span class="text-purple-400 font-bold">simplified versions</span> of the full platform capabilities.</p>
+            <p class="text-sm">Actual platform includes: fraud detection, predictive analytics, white-label branding, CRM, and 40+ more features.</p>
+        </div>
+    </div>
+
+    <script>
+        // Generate AI Report
+        function generateReport() {
+            const btn = document.getElementById('generateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Generating report... (8 seconds)';
+
+            // Generate random report number
+            const reportNum = 'INS-' + Math.floor(Math.random() * 900000 + 100000);
+            document.getElementById('reportNumber').textContent = reportNum;
+
+            // Set current date
+            const today = new Date().toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('reportDate').textContent = today;
+
+            setTimeout(() => {
+                document.getElementById('reportOutput').classList.remove('hidden');
+                document.getElementById('reportOutput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                btn.disabled = false;
+                btn.innerHTML = '🚀 Generate Another Report';
+            }, 8000);
+        }
+
+        // Find Leads
+        function findLeads() {
+            const city = document.getElementById('cityInput').value.trim();
+            if (!city) {
+                alert('Please enter a city name');
+                return;
+            }
+
+            const btn = document.getElementById('findLeadsBtn');
+            btn.disabled = true;
+            btn.innerHTML = '🔍 Scanning marketplace...';
+
+            // Mock leads data
+            const leads = [
+                {
+                    title: '2017 Toyota Camry - Clean Title',
+                    price: '$14,500',
+                    seller: 'Jessica M.',
+                    posted: '2 hours ago',
+                    urgency: 'HIGH',
+                    reason: 'First-time buyer, asking about "what to check", needs guidance',
+                    contact: 'Message: "Hi! Is this still available? I\'m interested but want to get it inspected first."'
+                },
+                {
+                    title: '2019 Honda CR-V EX - One Owner',
+                    price: '$22,900',
+                    seller: 'Mike T.',
+                    posted: '5 hours ago',
+                    urgency: 'MEDIUM',
+                    reason: 'Out-of-state buyer, mentioned "need inspection" in description',
+                    contact: 'Listed phone: (555) 892-1234'
+                },
+                {
+                    title: '2016 Ford F-150 - Priced to Sell',
+                    price: '$18,000',
+                    seller: 'Sarah K.',
+                    posted: '12 hours ago',
+                    urgency: 'HIGH',
+                    reason: 'Price $3k below market, buyer will want pre-purchase inspection',
+                    contact: 'Seller active (online now)'
+                },
+                {
+                    title: '2018 Nissan Altima - Great Condition',
+                    price: '$13,200',
+                    seller: 'David R.',
+                    posted: '18 hours ago',
+                    urgency: 'LOW',
+                    reason: 'Recent CarFax posted, but no mention of inspection',
+                    contact: 'FB Messenger available'
+                },
+                {
+                    title: '2015 Mazda CX-5 Touring',
+                    price: '$15,800',
+                    seller: 'Amanda L.',
+                    posted: '1 day ago',
+                    urgency: 'MEDIUM',
+                    reason: 'Buyer commented asking about "any issues" - opportunity to offer inspection',
+                    contact: '3 interested buyers (competition)'
+                }
+            ];
+
+            setTimeout(() => {
+                document.getElementById('leadCount').textContent = leads.length;
+                document.getElementById('scanTime').textContent = new Date().toLocaleTimeString();
+
+                const leadsList = document.getElementById('leadsList');
+                leadsList.innerHTML = leads.map(lead => `
+                    <div class="bg-gray-800 rounded-lg p-5 border border-gray-600 hover:border-green-500 transition-colors">
+                        <div class="flex items-start justify-between mb-3">
+                            <div>
+                                <h4 class="text-xl font-bold text-white mb-1">${lead.title}</h4>
+                                <div class="text-green-400 font-bold text-lg">${lead.price}</div>
+                            </div>
+                            <div class="text-right">
+                                <div class="text-xs text-gray-400">Posted</div>
+                                <div class="text-sm font-semibold">${lead.posted}</div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="text-sm text-gray-400">Seller:</span>
+                            <span class="font-semibold">${lead.seller}</span>
+                            <span class="px-2 py-1 rounded text-xs font-bold ${
+                                lead.urgency === 'HIGH' ? 'bg-red-900 text-red-200' :
+                                lead.urgency === 'MEDIUM' ? 'bg-yellow-900 text-yellow-200' :
+                                'bg-gray-700 text-gray-300'
+                            }">
+                                ${lead.urgency} URGENCY
+                            </span>
+                        </div>
+
+                        <div class="bg-gray-900 p-3 rounded mb-3">
+                            <div class="text-xs text-gray-500 mb-1">🤖 AI INSIGHT:</div>
+                            <div class="text-sm text-gray-300">${lead.reason}</div>
+                        </div>
+
+                        <div class="bg-blue-900 bg-opacity-30 p-3 rounded border border-blue-700">
+                            <div class="text-xs text-blue-300 mb-1">📞 CONTACT INFO:</div>
+                            <div class="text-sm text-white">${lead.contact}</div>
+                        </div>
+
+                        <div class="mt-3 pt-3 border-t border-gray-700 flex gap-2">
+                            <button class="flex-1 bg-green-600 hover:bg-green-700 px-4 py-2 rounded font-semibold text-sm transition-colors">
+                                Send Intro Message
+                            </button>
+                            <button class="flex-1 bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded font-semibold text-sm transition-colors">
+                                Add to Pipeline
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+
+                document.getElementById('leadsOutput').classList.remove('hidden');
+                document.getElementById('leadsOutput').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                btn.disabled = false;
+                btn.innerHTML = '🔍 Find Leads Now';
+            }, 10000);
+        }
+    </script>
+</body>
+</html>

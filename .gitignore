@@ -1,0 +1,8 @@
+node_modules/
+dist/
+dist_new/
+*.zip
+.env
+docker-compose.yml
+*.env
+.env.*

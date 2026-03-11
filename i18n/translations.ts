@@ -1,0 +1,218 @@
+export type Language = 'en' | 'es';
+
+export const translations = {
+  en: {
+    // Navigation
+    nav: {
+      dashboard: 'Dashboard',
+      newInspection: 'New Inspection',
+      diagnostics: 'Diagnostics',
+      reports: 'Reports',
+      referral: 'Earn',
+      admin: 'Admin',
+      signOut: 'Sign Out',
+    },
+    // Inspection Wizard
+    wizard: {
+      title: 'New Vehicle Inspection',
+      step: 'Step',
+      of: 'of',
+      next: 'Next →',
+      back: '← Back',
+      finish: 'Generate Report',
+      steps: {
+        vehicle: 'Vehicle Info',
+        exterior: 'Exterior',
+        interior: 'Interior',
+        mechanical: 'Mechanical',
+        obd: 'OBD Scan',
+        fraud: 'Fraud & Damage',
+        report: 'Report',
+      },
+    },
+    // Vehicle Info
+    vehicle: {
+      title: 'Tell us about the vehicle',
+      subtitle: 'Enter the VIN or fill in manually. We\'ll auto-detect the vehicle type.',
+      vinLabel: 'VIN Number',
+      vinPlaceholder: 'Enter 17-character VIN',
+      decodeVin: 'Decode VIN',
+      decoding: 'Decoding...',
+      orManual: 'or fill in manually',
+      make: 'Make',
+      model: 'Model',
+      year: 'Year',
+      mileage: 'Mileage',
+      vehicleType: 'Vehicle Type',
+      color: 'Color',
+      licensePlate: 'License Plate',
+      state: 'State',
+    },
+    // Checklist
+    checklist: {
+      pass: 'Pass',
+      fail: 'Fail',
+      na: 'N/A',
+      addNote: 'Add note...',
+      photoTip: 'Tap to add photo',
+    },
+    // OBD
+    obd: {
+      title: 'OBD Diagnostic Scan',
+      adapterTitle: 'Required Adapter',
+      connectBtn: 'Connect OBD Adapter',
+      scanBtn: 'Start Scan',
+      scanning: 'Scanning...',
+      noFaults: 'No fault codes detected',
+      faultsFound: 'fault codes found',
+    },
+    // Report
+    report: {
+      title: 'Inspection Report',
+      sendToCustomer: 'Send Report to Customer',
+      customerEmail: 'Customer Email',
+      customerName: 'Customer Name',
+      sendBtn: 'Send Report',
+      sending: 'Sending...',
+      sent: 'Report sent!',
+      downloadPdf: 'Download PDF',
+      overall: 'Overall Condition',
+      excellent: 'Excellent',
+      good: 'Good',
+      fair: 'Fair',
+      poor: 'Poor',
+    },
+    // Auth
+    auth: {
+      signIn: 'Sign In',
+      email: 'Email',
+      password: 'Password',
+      forgotPassword: 'Forgot password?',
+      noAccount: 'Don\'t have an account?',
+      getAccess: 'Get Access',
+    },
+    // Common
+    common: {
+      save: 'Save',
+      cancel: 'Cancel',
+      delete: 'Delete',
+      edit: 'Edit',
+      view: 'View',
+      loading: 'Loading...',
+      error: 'Something went wrong',
+      success: 'Success',
+      required: 'Required',
+      optional: 'Optional',
+      yes: 'Yes',
+      no: 'No',
+    },
+  },
+  es: {
+    // Navigation
+    nav: {
+      dashboard: 'Panel',
+      newInspection: 'Nueva Inspección',
+      diagnostics: 'Diagnósticos',
+      reports: 'Informes',
+      referral: 'Ganar',
+      admin: 'Admin',
+      signOut: 'Cerrar Sesión',
+    },
+    // Inspection Wizard
+    wizard: {
+      title: 'Nueva Inspección de Vehículo',
+      step: 'Paso',
+      of: 'de',
+      next: 'Siguiente →',
+      back: '← Atrás',
+      finish: 'Generar Informe',
+      steps: {
+        vehicle: 'Info del Vehículo',
+        exterior: 'Exterior',
+        interior: 'Interior',
+        mechanical: 'Mecánica',
+        obd: 'Escaneo OBD',
+        fraud: 'Fraude y Daños',
+        report: 'Informe',
+      },
+    },
+    // Vehicle Info
+    vehicle: {
+      title: 'Cuéntanos sobre el vehículo',
+      subtitle: 'Ingresa el VIN o llena manualmente. Detectaremos el tipo de vehículo automáticamente.',
+      vinLabel: 'Número VIN',
+      vinPlaceholder: 'Ingresa el VIN de 17 caracteres',
+      decodeVin: 'Decodificar VIN',
+      decoding: 'Decodificando...',
+      orManual: 'o llena manualmente',
+      make: 'Marca',
+      model: 'Modelo',
+      year: 'Año',
+      mileage: 'Kilometraje',
+      vehicleType: 'Tipo de Vehículo',
+      color: 'Color',
+      licensePlate: 'Placa',
+      state: 'Estado',
+    },
+    // Checklist
+    checklist: {
+      pass: 'Pasa',
+      fail: 'Falla',
+      na: 'N/A',
+      addNote: 'Agregar nota...',
+      photoTip: 'Toca para agregar foto',
+    },
+    // OBD
+    obd: {
+      title: 'Escaneo Diagnóstico OBD',
+      adapterTitle: 'Adaptador Requerido',
+      connectBtn: 'Conectar Adaptador OBD',
+      scanBtn: 'Iniciar Escaneo',
+      scanning: 'Escaneando...',
+      noFaults: 'No se detectaron códigos de falla',
+      faultsFound: 'códigos de falla encontrados',
+    },
+    // Report
+    report: {
+      title: 'Informe de Inspección',
+      sendToCustomer: 'Enviar Informe al Cliente',
+      customerEmail: 'Correo del Cliente',
+      customerName: 'Nombre del Cliente',
+      sendBtn: 'Enviar Informe',
+      sending: 'Enviando...',
+      sent: '¡Informe enviado!',
+      downloadPdf: 'Descargar PDF',
+      overall: 'Condición General',
+      excellent: 'Excelente',
+      good: 'Bueno',
+      fair: 'Regular',
+      poor: 'Malo',
+    },
+    // Auth
+    auth: {
+      signIn: 'Iniciar Sesión',
+      email: 'Correo',
+      password: 'Contraseña',
+      forgotPassword: '¿Olvidaste tu contraseña?',
+      noAccount: '¿No tienes cuenta?',
+      getAccess: 'Obtener Acceso',
+    },
+    // Common
+    common: {
+      save: 'Guardar',
+      cancel: 'Cancelar',
+      delete: 'Eliminar',
+      edit: 'Editar',
+      view: 'Ver',
+      loading: 'Cargando...',
+      error: 'Algo salió mal',
+      success: 'Éxito',
+      required: 'Requerido',
+      optional: 'Opcional',
+      yes: 'Sí',
+      no: 'No',
+    },
+  },
+};
+
+export type TranslationKeys = typeof translations.en;

@@ -1,0 +1,31 @@
+{
+  "name": "copy-of-copy-of-copy-of-copy-of-of-ai-auto-pro1111",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "backup-keys": "bash scripts/backup-api-keys.sh",
+    "restore-keys": "bash scripts/restore-api-keys.sh",
+    "migrate": "cd backend && npm install && npm run migrate"
+  },
+  "dependencies": {
+    "@google/genai": "^1.16.0",
+    "@supabase/supabase-js": "^2.89.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.4",
+    "lucide-react": "^0.577.0",
+    "react": "19",
+    "react-dom": "19",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.2.1",
+    "@types/node": "^22.14.0",
+    "tailwindcss": "^4.2.1"
+  }
+}

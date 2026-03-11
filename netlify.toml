@@ -1,0 +1,16 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[context.production.environment]
+  VITE_BACKEND_URL = "https://auto-production-8579.up.railway.app"
+  VITE_CLOUDINARY_CLOUD_NAME = "dbzkzqux3"
+  VITE_CLOUDINARY_UPLOAD_PRESET = "auto_inspection"

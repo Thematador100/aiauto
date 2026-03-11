@@ -1,0 +1,7 @@
+{
+  "name": "Copy of Copy of Copy of Copy of of AI Auto Pro1111",
+  "description": "An advanced mobile application for AI-powered car inspections and mechanic diagnostics. Upload photos for instant damage analysis and describe vehicle problems to receive expert repair guidance.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
