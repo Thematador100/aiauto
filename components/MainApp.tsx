@@ -12,9 +12,10 @@ import { UserProfile } from './UserProfile';
 import { ManualPage } from './ManualPage';
 import { ReferralDashboard } from './ReferralDashboard';
 import InspectionWizard from './InspectionWizard';
+import { RentalFleetModule } from './RentalFleetModule';
 import LanguageToggle from './LanguageToggle';
 
-type View = 'Dashboard' | 'Inspection' | 'Wizard' | 'Diagnostics' | 'Assistant' | 'Profile' | 'Manual' | 'Finalize' | 'Report' | 'Referral';
+type View = 'Dashboard' | 'Inspection' | 'Wizard' | 'Diagnostics' | 'Assistant' | 'Profile' | 'Manual' | 'Finalize' | 'Report' | 'Referral' | 'Fleet';
 
 interface MainAppProps {
   user: User;
@@ -55,7 +56,7 @@ export const MainApp: React.FC<MainAppProps> = ({ user, onLogout }) => {
       setInspectionState(null);
       setCompletedReport(null);
       setView('Dashboard');
-    } else if (tab === 'Diagnostics' || tab === 'Assistant' || tab === 'Profile' || tab === 'Manual' || tab === 'Referral') {
+    } else if (tab === 'Diagnostics' || tab === 'Assistant' || tab === 'Profile' || tab === 'Manual' || tab === 'Referral' || tab === 'Fleet') {
       // Do NOT clear inspectionState — Diagnostics needs vehicleType from current inspection
       setView(tab as View);
     } else if (tab === 'Inspection') {
@@ -66,7 +67,7 @@ export const MainApp: React.FC<MainAppProps> = ({ user, onLogout }) => {
   const renderContent = () => {
     switch (view) {
       case 'Dashboard':
-        return <CustomerDashboard user={user} onNewInspection={handleNewInspection} />;
+        return <CustomerDashboard user={user} onNewInspection={handleNewInspection} onViewReport={(r) => { setCompletedReport(r); setView('Report'); }} />;
       case 'Inspection':
         return <InspectionForm onFinalize={handleFinalize} />;
       case 'Wizard':
@@ -114,10 +115,12 @@ export const MainApp: React.FC<MainAppProps> = ({ user, onLogout }) => {
         return <UserProfile user={user} onLogout={onLogout} />;
       case 'Manual':
         return <ManualPage onBack={() => { setView('Dashboard'); setActiveTab('Dashboard'); }} />;
+      case 'Fleet':
+        return <RentalFleetModule />;
       case 'Referral':
         return <ReferralDashboard />;
       default:
-        return <CustomerDashboard user={user} onNewInspection={handleNewInspection} />;
+        return <CustomerDashboard user={user} onNewInspection={handleNewInspection} onViewReport={(r) => { setCompletedReport(r); setView('Report'); }} />;
     }
   };
 

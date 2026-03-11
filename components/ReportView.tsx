@@ -180,20 +180,53 @@ export const ReportView: React.FC<{ report: CompletedReport }> = ({ report }) =>
 
   return (
     <div className="space-y-6" id="report-content">
-      {/* Action Buttons */}
-      <div className="bg-dark-card p-4 rounded-lg border border-dark-border flex gap-3 justify-end flex-wrap print:hidden">
-        <button onClick={handleDownloadPDF} disabled={isGeneratingPDF} className="flex items-center gap-2 bg-primary hover:bg-primary-light text-white font-semibold py-2 px-4 rounded-lg transition-colors disabled:opacity-50">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
-          {isGeneratingPDF ? 'Generating...' : 'Download PDF'}
-        </button>
-        <button onClick={() => setShowEmailModal(true)} className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" /><path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" /></svg>
-          Email Report
-        </button>
-        <button onClick={() => printReport()} className="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors">
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clipRule="evenodd" /></svg>
-          Print
-        </button>
+      {/* ─── Share Report Panel ─── */}
+      <div className="bg-gradient-to-r from-blue-950/60 to-dark-card border-2 border-blue-700/50 rounded-2xl p-5 print:hidden">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-2xl">📤</span>
+          <div>
+            <h2 className="text-light-text font-bold text-lg">Share This Report</h2>
+            <p className="text-medium-text text-xs">Send to the client, print for your records, or save as PDF</p>
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Email to Client */}
+          <button
+            onClick={() => setShowEmailModal(true)}
+            className="flex flex-col items-center justify-center gap-2 bg-green-600 hover:bg-green-700 active:bg-green-800 text-white font-bold py-5 px-4 rounded-xl transition-colors shadow-md text-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <span className="text-base">Email to Client</span>
+            <span className="text-green-200 text-xs font-normal">Just type their email — done</span>
+          </button>
+
+          {/* Download PDF */}
+          <button
+            onClick={handleDownloadPDF}
+            disabled={isGeneratingPDF}
+            className="flex flex-col items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold py-5 px-4 rounded-xl transition-colors shadow-md text-center disabled:opacity-50"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span className="text-base">{isGeneratingPDF ? 'Generating...' : 'Download PDF'}</span>
+            <span className="text-blue-200 text-xs font-normal">Save to phone or computer</span>
+          </button>
+
+          {/* Print */}
+          <button
+            onClick={() => printReport()}
+            className="flex flex-col items-center justify-center gap-2 bg-gray-600 hover:bg-gray-700 active:bg-gray-800 text-white font-bold py-5 px-4 rounded-xl transition-colors shadow-md text-center"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+            </svg>
+            <span className="text-base">Print Report</span>
+            <span className="text-gray-300 text-xs font-normal">Opens print dialog</span>
+          </button>
+        </div>
       </div>
 
       {/* Report Header */}
