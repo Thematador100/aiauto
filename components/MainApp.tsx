@@ -13,9 +13,10 @@ import { ManualPage } from './ManualPage';
 import { ReferralDashboard } from './ReferralDashboard';
 import InspectionWizard from './InspectionWizard';
 import { RentalFleetModule } from './RentalFleetModule';
+import { ResellerDashboard } from './ResellerDashboard';
 import LanguageToggle from './LanguageToggle';
 
-type View = 'Dashboard' | 'Inspection' | 'Wizard' | 'Diagnostics' | 'Assistant' | 'Profile' | 'Manual' | 'Finalize' | 'Report' | 'Referral' | 'Fleet';
+type View = 'Dashboard' | 'Inspection' | 'Wizard' | 'Diagnostics' | 'Assistant' | 'Profile' | 'Manual' | 'Finalize' | 'Report' | 'Referral' | 'Fleet' | 'Reseller';
 
 interface MainAppProps {
   user: User;
@@ -56,7 +57,7 @@ export const MainApp: React.FC<MainAppProps> = ({ user, onLogout }) => {
       setInspectionState(null);
       setCompletedReport(null);
       setView('Dashboard');
-    } else if (tab === 'Diagnostics' || tab === 'Assistant' || tab === 'Profile' || tab === 'Manual' || tab === 'Referral' || tab === 'Fleet') {
+    } else if (tab === 'Diagnostics' || tab === 'Assistant' || tab === 'Profile' || tab === 'Manual' || tab === 'Referral' || tab === 'Fleet' || tab === 'Reseller') {
       // Do NOT clear inspectionState — Diagnostics needs vehicleType from current inspection
       setView(tab as View);
     } else if (tab === 'Inspection') {
@@ -74,9 +75,36 @@ export const MainApp: React.FC<MainAppProps> = ({ user, onLogout }) => {
         return (
           <InspectionWizard
             onComplete={(data) => {
-              // Convert wizard data to InspectionState format and finalize
-              setView('Dashboard');
-              setActiveTab('Dashboard');
+              // Convert wizard data into InspectionState and go to Finalize
+              const sections: any[] = [];
+              // Build checklist sections from wizard data
+              if (data.checklist && Object.keys(data.checklist).length > 0) {
+                const items = Object.entries(data.checklist).map(([name, status]) => ({
+                  id: name.toLowerCase().replace(/\s+/g, '_'),
+                  name,
+                  status: status as 'pass' | 'fail' | 'na' | 'concern',
+                  photos: [],
+                  notes: data.notes?.[name] || '',
+                }));
+                sections.push({ name: 'Inspection', items });
+              }
+              const state: any = {
+                vehicle: data.vehicle,
+                vehicleType: data.vehicle.vehicleType || 'Standard',
+                checklist: { sections },
+                complianceChecklist: { sections: [] },
+                overallNotes: '',
+                odometer: data.vehicle.odometer || '',
+                obdData: data.obdCodes?.length > 0 ? {
+                  dtcCodes: data.obdCodes.map((code: string) => ({ code, description: 'DTC fault code' })),
+                  liveData: data.obdLiveData || {},
+                  connected: data.obdConnected || false,
+                  deviceName: data.obdDeviceName || 'OBDLink MX+',
+                } : undefined,
+              };
+              setInspectionState(state);
+              setView('Finalize');
+              setActiveTab('Inspection');
             }}
             onCancel={() => { setView('Dashboard'); setActiveTab('Dashboard'); }}
           />
@@ -117,6 +145,8 @@ export const MainApp: React.FC<MainAppProps> = ({ user, onLogout }) => {
         return <ManualPage onBack={() => { setView('Dashboard'); setActiveTab('Dashboard'); }} />;
       case 'Fleet':
         return <RentalFleetModule />;
+      case 'Reseller':
+        return <ResellerDashboard token={token || ''} />;
       case 'Referral':
         return <ReferralDashboard />;
       default:

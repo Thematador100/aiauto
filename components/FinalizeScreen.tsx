@@ -4,6 +4,7 @@ import { getVehicleHistory } from '../services/vehicleHistoryService';
 import { getSafetyRecalls, getTheftAndSalvageRecord } from '../services/vehicleExtraDataService';
 import { generateReportSummary } from '../services/geminiService';
 import { offlineService } from '../services/offlineService';
+import { predictiveMaintenanceService } from '../services/predictiveMaintenanceService';
 import { LoadingSpinner } from './LoadingSpinner';
 
 /** Categories containing exterior photos suitable for AI damage analysis */
@@ -126,6 +127,19 @@ export const FinalizeScreen: React.FC<FinalizeScreenProps> = ({ inspectionState,
   useEffect(() => {
     const generateReport = async () => {
       try {
+        const startTime = new Date().toISOString();
+        let gpsLocation: { lat: number; lng: number; address?: string } | undefined;
+        try {
+          const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+            navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 })
+          );
+          gpsLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          try {
+            const geo = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${gpsLocation.lat}&lon=${gpsLocation.lng}&format=json`);
+            const geoData = await geo.json();
+            gpsLocation.address = geoData.display_name?.split(',').slice(0, 3).join(',') || undefined;
+          } catch { /* GPS without address is fine */ }
+        } catch { /* GPS not available */ }
         setStatus('Fetching vehicle history...');
         const historyPromise = getVehicleHistory(inspectionState.vehicle.vin);
 
@@ -186,7 +200,22 @@ export const FinalizeScreen: React.FC<FinalizeScreenProps> = ({ inspectionState,
           }
         })();
 
-        const [history, recalls, theftRecord, summaryText, damageAssessment] = await Promise.all([historyPromise, recallsPromise, theftPromise, summaryPromise, damagePromise]);
+        setStatus('Running predictive maintenance analysis...');
+        const maintenancePromise = (async () => {
+          try {
+            const odometerNum = parseInt(inspectionState.odometer?.replace(/[^0-9]/g, '') || '0');
+            const dtcCodes = inspectionState.obdData?.dtcCodes?.map((d: any) => d.code) || [];
+            return await predictiveMaintenanceService.predictMaintenance({
+              year: parseInt(inspectionState.vehicle.year || '2000'),
+              make: inspectionState.vehicle.make || '',
+              model: inspectionState.vehicle.model || '',
+              odometer: odometerNum,
+              dtcCodes,
+              liveData: inspectionState.obdData?.liveData,
+            });
+          } catch { return null; }
+        })();
+        const [history, recalls, theftRecord, summaryText, damageAssessment, maintenanceResult] = await Promise.all([historyPromise, recallsPromise, theftPromise, summaryPromise, damagePromise, maintenancePromise]);
 
         setStatus('Compiling final report...');
         const summary = parseSummary(summaryText);
@@ -225,6 +254,18 @@ export const FinalizeScreen: React.FC<FinalizeScreenProps> = ({ inspectionState,
           vehicleHistory: history,
           safetyRecalls: recalls,
           theftAndSalvage: theftRecord,
+          obdData: inspectionState.obdData,
+          predictiveMaintenance: maintenanceResult ? {
+            overallHealthScore: maintenanceResult.overall,
+            predictions: maintenanceResult.predictions,
+          } : undefined,
+          inspectionMeta: {
+            startTime,
+            endTime: new Date().toISOString(),
+            durationMinutes: Math.round((Date.now() - new Date(startTime).getTime()) / 60000),
+            gpsLocation,
+            inspectionMode: (inspectionState as any).inspectionMode || 'standard',
+          },
         };
 
         setStatus('Saving report...');

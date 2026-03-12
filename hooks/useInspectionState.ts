@@ -76,6 +76,9 @@ export const useInspectionState = () => {
   const setOverallNotes = useCallback((value: string) => {
     setState(prevState => prevState ? { ...prevState, overallNotes: value } : null);
   }, []);
+  const setObdData = useCallback((obdData: any) => {
+    setState(prevState => prevState ? { ...prevState, obdData } : null);
+  }, []);
 
   const addPhotoToChecklistItem = useCallback((category: string, itemIndex: number, photo: InspectionPhoto) => {
     setState(prevState => {
@@ -131,5 +134,6 @@ export const useInspectionState = () => {
     addPhotoToChecklistItem,
     removePhotoFromChecklistItem,
     addAudioToChecklistItem,
+    setObdData,
   };
 };

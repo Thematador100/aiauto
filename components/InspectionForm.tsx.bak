@@ -6,7 +6,6 @@ import { DecodedVehicle } from '../services/vehicleDataService';
 import { VEHICLE_INSPECTION_TEMPLATES, DEALER_TRICKS } from '../constants';
 import { resizeAndCompressImage } from '../services/imageOptimizer';
 import { AudioRecorder } from './AudioRecorder';
-import { CommonIssuesAlert } from './CommonIssuesAlert';
 import { LoadingSpinner } from './LoadingSpinner';
 import { FraudDetection } from './FraudDetection';
 
@@ -133,7 +132,7 @@ const ChecklistItemRow: React.FC<{
           {item.photos.map(photo => (
             <div key={photo.id} className="relative group">
               <img src={`data:${photo.mimeType};base64,${photo.base64}`} alt="Inspection" className="rounded-md object-cover w-full h-20" />
-              <button onClick={() => onRemovePhoto(category, index, photo.id)} className="absolute top-0 right-0 bg-red-600 text-white rounded-full p-0.5 m-1 opacity-100 transition-opacity">
+              <button onClick={() => onRemovePhoto(category, index, photo.id)} className="absolute top-0 right-0 bg-red-600 text-white rounded-full p-0.5 m-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                 </svg>
@@ -381,14 +380,6 @@ export const InspectionForm: React.FC<InspectionFormProps> = ({ onFinalize }) =>
 
       {/* Dealer Tricks Alert */}
       <DealerTricksPanel vehicleType={inspectionState.vehicleType} />
-      {/* Known Issues Alert for this specific vehicle */}
-      {inspectionState.vehicle.make !== 'Unknown' && (
-        <CommonIssuesAlert
-          make={inspectionState.vehicle.make}
-          model={inspectionState.vehicle.model}
-          year={parseInt(inspectionState.vehicle.year) || new Date().getFullYear()}
-        />
-      )}
 
       {/* Progress Indicator */}
       <div className="bg-dark-card p-4 rounded-lg border border-dark-border sticky top-0 z-10">

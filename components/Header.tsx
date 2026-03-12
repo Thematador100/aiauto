@@ -10,9 +10,10 @@ interface HeaderProps {
   extraControls?: React.ReactNode;
 }
 
-const TABS = ['Dashboard', 'Inspection', 'Diagnostics', 'Assistant', 'Fleet', 'Referral', 'Profile', 'Manual'];
+const TABS = ['Dashboard', 'Inspection', 'Diagnostics', 'Assistant', 'Fleet', 'Reseller', 'Referral', 'Profile', 'Manual'];
 const TAB_LABELS: Record<string, string> = {
   Fleet: '🚗 Fleet',
+  Reseller: '🔑 Reseller',
   Referral: '💰 Earn',
 };
 

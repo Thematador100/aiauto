@@ -15,6 +15,7 @@ import commonIssuesRoutes from './routes/commonIssues.js';
 import adminRoutes from './routes/admin.js';
 import ttsRoutes from './routes/tts.js';
 import referralRoutes from './routes/referral.js';
+import resellerRoutes from './routes/reseller.js';
 import { authenticateToken, requireActiveLicense } from './middleware/auth.js';
 import { runMigrations } from './utils/runMigrations.js';
 import { fileURLToPath } from 'url';
@@ -161,6 +162,7 @@ app.use('/api/fraud', authenticateToken, requireActiveLicense, fraudRoutes);
 app.use('/api/common-issues', commonIssuesRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/referral', referralRoutes);
+app.use('/api/reseller', resellerRoutes);
 app.use('/api/tts', authenticateToken, requireActiveLicense, ttsRoutes);
 app.use('/api', authenticateToken, requireActiveLicense, aiRoutes);
 

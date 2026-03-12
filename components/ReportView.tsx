@@ -255,7 +255,49 @@ export const ReportView: React.FC<{ report: CompletedReport }> = ({ report }) =>
           </div>
         )}
       </div>
+        {report.inspectionMeta && (
+          <div className="mt-3 pt-3 border-t border-dark-border flex flex-wrap gap-4 text-xs text-medium-text">
+            {report.inspectionMeta.durationMinutes > 0 && (
+              <span>Duration: <span className="text-light-text font-medium">{report.inspectionMeta.durationMinutes} min</span></span>
+            )}
+            {report.inspectionMeta.gpsLocation && report.inspectionMeta.gpsLocation.address && (
+              <span>Location: <span className="text-light-text font-medium">{report.inspectionMeta.gpsLocation.address}</span></span>
+            )}
+            <span>Mode: <span className="text-light-text font-medium capitalize">{report.inspectionMeta.inspectionMode} Inspection</span></span>
+          </div>
+        )}
 
+      {/* Predictive Maintenance Section */}
+      {report.predictiveMaintenance && report.predictiveMaintenance.predictions && report.predictiveMaintenance.predictions.length > 0 && (
+        <div className="bg-dark-card p-6 rounded-lg border border-dark-border">
+          <div className="flex items-center gap-3 mb-4">
+            <div>
+              <h2 className="text-xl font-bold text-light-text">Predictive Maintenance</h2>
+              <p className="text-sm text-medium-text">AI-powered maintenance forecast</p>
+            </div>
+            <div className="ml-auto text-right">
+              <div className="text-3xl font-bold text-primary">{report.predictiveMaintenance.overallHealthScore}<span className="text-base text-medium-text">/100</span></div>
+              <div className="text-xs text-medium-text">Health Score</div>
+            </div>
+          </div>
+          <div className="space-y-3">
+            {report.predictiveMaintenance.predictions.slice(0, 5).map((pred: any, i: number) => (
+              <div key={i} className={"p-3 rounded-lg border flex items-start gap-3 " + (pred.severity === "critical" ? "border-red-700 bg-red-900/20" : pred.severity === "high" ? "border-orange-700 bg-orange-900/20" : pred.severity === "medium" ? "border-yellow-700 bg-yellow-900/20" : "border-dark-border bg-dark-bg")}>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-light-text text-sm">{pred.component}</span>
+                    <span className="text-xs text-medium-text">{pred.timeframe}</span>
+                  </div>
+                  {pred.recommendations && pred.recommendations[0] && <p className="text-xs text-medium-text mt-1">{pred.recommendations[0]}</p>}
+                </div>
+                {pred.estimatedCost && (
+                  <span className="text-xs font-semibold text-light-text whitespace-nowrap">${pred.estimatedCost.min}–${pred.estimatedCost.max}</span>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {/* Vehicle Grade Card */}
       {grade && gradeColor && (
         <div className={`bg-dark-card p-6 rounded-lg border-2 ${gradeColor.border}`}>

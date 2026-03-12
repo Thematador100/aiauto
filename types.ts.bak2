@@ -61,30 +61,6 @@ export interface InspectionSection {
   [key: string]: InspectionChecklistItem[];
 }
 
-export interface OBDData {
-  connected: boolean;
-  deviceName?: string;
-  dtcCodes: string[];
-  liveData?: {
-    rpm?: number;
-    speed?: number;
-    coolantTemp?: number;
-    engineLoad?: number;
-    fuelPressure?: number;
-    intakeTemp?: number;
-    maf?: number;
-    throttlePosition?: number;
-  };
-  evBattery?: {
-    stateOfCharge?: number;
-    stateOfHealth?: number;
-    batteryVoltage?: number;
-    batteryTemperature?: number;
-  };
-  analysis?: string;
-  manualEntry?: boolean;
-}
-
 export interface InspectionState {
   vehicle: Vehicle;
   vehicleType: keyof typeof import('./constants').VEHICLE_INSPECTION_TEMPLATES;
@@ -92,26 +68,6 @@ export interface InspectionState {
   complianceChecklist: InspectionSection;
   overallNotes: string;
   odometer: string;
-  obdData?: OBDData;
-  predictiveMaintenance?: {
-    overallHealthScore: number;
-    predictions: Array<{
-      component: string;
-      likelihood: number;
-      timeframe: string;
-      severity: string;
-      estimatedCost: { min: number; max: number };
-      recommendations: string[];
-    }>;
-  };
-  inspectionMeta?: {
-    startTime: string;
-    endTime: string;
-    durationMinutes: number;
-    gpsLocation?: { lat: number; lng: number; address?: string };
-    inspectorSignature?: string;
-    inspectionMode: string;
-  };
 }
 
 // Diagnostic and Chat types
@@ -197,7 +153,6 @@ export interface CompletedReport {
   vehicleHistory: VehicleHistoryReport;
   safetyRecalls: SafetyRecall[];
   theftAndSalvage: TheftRecord;
-  obdData?: OBDData;
 }
 
 // Pricing and configuration types

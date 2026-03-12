@@ -61,6 +61,236 @@ const OBD_ADAPTER_INFO: Record<VehicleType, { adapter: string; connector: string
   Motorcycle: { adapter: 'OBDLink MX+', connector: 'OBD-II or proprietary', note: 'Many modern motorcycles (2010+) support OBD-II. Check your bike\'s manual. Older bikes may not support OBD scanning.' },
 };
 
+
+// ── OBD Step Panel ─────────────────────────────────────────────────────────────
+interface OBDStepPanelProps {
+  vehicleType: VehicleType;
+  obdInfo: { adapter: string; connector: string; note: string; warning?: string };
+  obdCodes: string[];
+  setObdCodes: (codes: string[]) => void;
+  obdLiveData: Record<string, any>;
+  setObdLiveData: (data: Record<string, any>) => void;
+  obdConnected: boolean;
+  setObdConnected: (v: boolean) => void;
+  obdDeviceName: string;
+  setObdDeviceName: (v: string) => void;
+  language: string;
+  t: any;
+}
+
+const OBDStepPanel: React.FC<OBDStepPanelProps> = ({
+  vehicleType, obdInfo, obdCodes, setObdCodes,
+  obdLiveData, setObdLiveData, obdConnected, setObdConnected,
+  obdDeviceName, setObdDeviceName, language, t
+}) => {
+  const [connecting, setConnecting] = React.useState(false);
+  const [connectError, setConnectError] = React.useState('');
+  const [showManual, setShowManual] = React.useState(false);
+  const [manualInput, setManualInput] = React.useState(obdCodes.join('\n'));
+  const hasWebBluetooth = typeof navigator !== 'undefined' && 'bluetooth' in navigator;
+
+  const connectOBD = async () => {
+    setConnecting(true);
+    setConnectError('');
+    try {
+      const device = await (navigator as any).bluetooth.requestDevice({
+        filters: [
+          { namePrefix: 'OBDLink' },
+          { namePrefix: 'OBDII' },
+          { namePrefix: 'ELM327' },
+          { namePrefix: 'OBD' },
+        ],
+        optionalServices: ['00001101-0000-1000-8000-00805f9b34fb'],
+      });
+      setObdDeviceName(device.name || 'OBDLink MX+');
+      setObdConnected(true);
+      // Connect and read basic PIDs
+      const server = await device.gatt.connect();
+      const service = await server.getPrimaryService('00001101-0000-1000-8000-00805f9b34fb');
+      const characteristic = await service.getCharacteristic('00001101-0000-1000-8000-00805f9b34fb');
+      // Send ATZ reset then read DTCs
+      const encoder = new TextEncoder();
+      const decoder = new TextDecoder();
+      const sendCmd = async (cmd: string) => {
+        await characteristic.writeValue(encoder.encode(cmd + '\r'));
+        await new Promise(r => setTimeout(r, 300));
+        const val = await characteristic.readValue();
+        return decoder.decode(val);
+      };
+      try {
+        await sendCmd('ATZ');
+        await sendCmd('ATE0');
+        await sendCmd('ATL0');
+        await sendCmd('ATH0');
+        await sendCmd('ATSP0');
+        const dtcRaw = await sendCmd('03');
+        // Parse DTC codes from raw response
+        const dtcCodes: string[] = [];
+        const dtcMatch = dtcRaw.match(/[0-9A-F]{4}/g);
+        if (dtcMatch) {
+          dtcMatch.forEach(code => {
+            if (code !== '0000') {
+              const prefix = ['P','C','B','U'][parseInt(code[0], 16) >> 2] || 'P';
+              const num = ((parseInt(code[0], 16) & 3) * 1000 + parseInt(code.slice(1), 16)).toString().padStart(4, '0');
+              dtcCodes.push(prefix + num);
+            }
+          });
+        }
+        setObdCodes(dtcCodes);
+        // Read live data
+        const rpmRaw = await sendCmd('010C');
+        const coolantRaw = await sendCmd('0105');
+        const liveData: Record<string, any> = {};
+        const rpmMatch = rpmRaw.match(/41 0C ([0-9A-F]{2}) ([0-9A-F]{2})/i);
+        if (rpmMatch) liveData.rpm = Math.round((parseInt(rpmMatch[1], 16) * 256 + parseInt(rpmMatch[2], 16)) / 4);
+        const coolantMatch = coolantRaw.match(/41 05 ([0-9A-F]{2})/i);
+        if (coolantMatch) liveData.coolantTemp = parseInt(coolantMatch[1], 16) - 40;
+        setObdLiveData(liveData);
+      } catch {
+        // Partial data is fine — connection still succeeded
+      }
+    } catch (err: any) {
+      if (err.name === 'NotFoundError') {
+        setConnectError(language === 'es'
+          ? 'No se encontró el dispositivo. Asegúrese de que el OBDLink MX+ esté enchufado y el Bluetooth activado.'
+          : 'Device not found. Make sure the OBDLink MX+ is plugged in and Bluetooth is on.');
+      } else {
+        setConnectError(err.message || 'Connection failed');
+      }
+      setObdConnected(false);
+    }
+    setConnecting(false);
+  };
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-xl font-bold text-white">{t.obd.title}</h2>
+
+      {/* Adapter info card */}
+      <div className={`rounded-xl p-4 ${obdInfo.warning ? 'bg-red-900/30 border border-red-700' : 'bg-blue-900/30 border border-blue-700'}`}>
+        <div className="flex items-start gap-3">
+          <span className="text-2xl">{obdInfo.warning ? '⚠️' : '🔌'}</span>
+          <div>
+            <div className="font-bold text-white text-sm">{t.obd.adapterTitle}: {obdInfo.adapter}</div>
+            <div className="text-xs text-gray-300 mt-1">{obdInfo.connector}</div>
+            {obdInfo.warning && <div className="text-red-300 text-xs font-semibold mt-2">{obdInfo.warning}</div>}
+            <div className="text-gray-400 text-xs mt-2">{obdInfo.note}</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Connection status */}
+      {obdConnected ? (
+        <div className="bg-green-900/30 border border-green-600 rounded-xl p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse" />
+            <div>
+              <div className="text-green-400 font-bold text-sm">
+                {language === 'es' ? 'Conectado' : 'Connected'}: {obdDeviceName}
+              </div>
+              {obdCodes.length === 0
+                ? <div className="text-green-300 text-xs mt-1">✅ {t.obd.noFaults}</div>
+                : <div className="text-yellow-400 text-xs mt-1">⚠️ {obdCodes.length} {t.obd.faultsFound}: {obdCodes.join(', ')}</div>
+              }
+              {obdLiveData.rpm && (
+                <div className="text-gray-300 text-xs mt-1">
+                  RPM: {obdLiveData.rpm} | {language === 'es' ? 'Temp. Motor' : 'Coolant'}: {obdLiveData.coolantTemp}°C
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Connect button — shown when Web Bluetooth is available (Android Chrome) */}
+          {hasWebBluetooth && !obdInfo.warning && (
+            <button
+              onClick={connectOBD}
+              disabled={connecting}
+              className="w-full py-4 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white rounded-xl font-bold text-base transition-all flex items-center justify-center gap-3"
+            >
+              {connecting ? (
+                <>
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  {language === 'es' ? 'Conectando...' : 'Connecting...'}
+                </>
+              ) : (
+                <>
+                  <span className="text-xl">📡</span>
+                  {language === 'es' ? 'Conectar OBDLink MX+ vía Bluetooth' : 'Connect OBDLink MX+ via Bluetooth'}
+                </>
+              )}
+            </button>
+          )}
+
+          {/* iOS / no Web Bluetooth notice */}
+          {(!hasWebBluetooth || obdInfo.warning) && (
+            <div className="bg-amber-900/30 border border-amber-600 rounded-xl p-4">
+              <div className="flex items-start gap-3">
+                <span className="text-xl">📱</span>
+                <div>
+                  <div className="font-bold text-amber-300 text-sm">
+                    {obdInfo.warning
+                      ? (language === 'es' ? 'Adaptador J1939 requerido' : 'J1939 Adapter Required')
+                      : (language === 'es' ? 'iPhone detectado' : 'iPhone Detected')}
+                  </div>
+                  <div className="text-amber-200 text-xs mt-1">
+                    {obdInfo.warning
+                      ? (language === 'es'
+                          ? 'Use el adaptador J1939 con la app OBDLink y escriba los códigos DTC abajo.'
+                          : 'Use the J1939 adapter with the OBDLink app, then enter DTC codes below.')
+                      : (language === 'es'
+                          ? 'En iPhone, use la app OBDLink MX+ para leer los códigos, luego escríbalos abajo.'
+                          : 'On iPhone, use the OBDLink MX+ app to read codes, then enter them below.')}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {connectError && (
+            <div className="bg-red-900/30 border border-red-600 rounded-xl p-3 text-red-300 text-sm">
+              ❌ {connectError}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Manual DTC entry — always available as fallback */}
+      <div className="bg-gray-800 rounded-xl p-4">
+        <button
+          onClick={() => setShowManual(v => !v)}
+          className="w-full flex items-center justify-between text-sm font-medium text-gray-300"
+        >
+          <span>{language === 'es' ? '✏️ Ingresar códigos DTC manualmente' : '✏️ Enter DTC codes manually'}</span>
+          <span className="text-gray-500">{showManual ? '▲' : '▼'}</span>
+        </button>
+        {showManual && (
+          <div className="mt-3">
+            <textarea
+              rows={3}
+              placeholder={language === 'es' ? 'P0300\nP0420\n(uno por línea)' : 'P0300\nP0420\n(one per line)'}
+              value={manualInput}
+              onChange={e => {
+                setManualInput(e.target.value);
+                setObdCodes(e.target.value.split('\n').map(s => s.trim()).filter(Boolean));
+              }}
+              className="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm font-mono border border-gray-600 focus:border-blue-500 focus:outline-none"
+            />
+            {obdCodes.length > 0 && (
+              <div className="mt-2 text-yellow-400 text-sm font-semibold">⚠️ {obdCodes.length} {t.obd.faultsFound}</div>
+            )}
+            {obdCodes.length === 0 && manualInput.trim() === '' && (
+              <div className="mt-2 text-green-400 text-sm">✅ {t.obd.noFaults}</div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+// ── End OBDStepPanel ───────────────────────────────────────────────────────────
+
 const InspectionWizard: React.FC<WizardProps> = ({ onComplete, onCancel }) => {
   const { t, language } = useLanguage();
   const [currentStep, setCurrentStep] = useState(0);
@@ -82,6 +312,9 @@ const InspectionWizard: React.FC<WizardProps> = ({ onComplete, onCancel }) => {
   const [checklist, setChecklist] = useState<Record<string, 'pass' | 'fail' | 'na'>>({});
   const [notes, setNotes] = useState<Record<string, string>>({});
   const [obdCodes, setObdCodes] = useState<string[]>([]);
+  const [obdLiveData, setObdLiveData] = useState<Record<string, any>>({});
+  const [obdConnected, setObdConnected] = useState(false);
+  const [obdDeviceName, setObdDeviceName] = useState('');
   const [fraudFlags, setFraudFlags] = useState<string[]>([]);
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerName, setCustomerName] = useState('');
@@ -342,48 +575,21 @@ const InspectionWizard: React.FC<WizardProps> = ({ onComplete, onCancel }) => {
 
       case 'obd':
         return (
-          <div className="space-y-4">
-            <h2 className="text-xl font-bold text-white">{t.obd.title}</h2>
-
-            {/* Adapter guidance */}
-            <div className={`rounded-xl p-4 ${obdInfo.warning ? 'bg-red-900/30 border border-red-700' : 'bg-blue-900/30 border border-blue-700'}`}>
-              <div className="flex items-start gap-3">
-                <span className="text-2xl">{obdInfo.warning ? '⚠️' : '🔌'}</span>
-                <div>
-                  <div className="font-bold text-white text-sm">{t.obd.adapterTitle}: {obdInfo.adapter}</div>
-                  <div className="text-xs text-gray-300 mt-1">{obdInfo.connector}</div>
-                  {obdInfo.warning && (
-                    <div className="text-red-300 text-xs font-semibold mt-2">{obdInfo.warning}</div>
-                  )}
-                  <div className="text-gray-400 text-xs mt-2">{obdInfo.note}</div>
-                </div>
-              </div>
-            </div>
-
-            {/* DTC codes input */}
-            <div className="bg-gray-800 rounded-xl p-4">
-              <label className="block text-sm font-medium text-gray-300 mb-2">
-                {language === 'es' ? 'Códigos DTC encontrados (uno por línea)' : 'DTC Codes Found (one per line)'}
-              </label>
-              <textarea
-                rows={4}
-                placeholder={language === 'es' ? 'P0300\nP0420\n...' : 'P0300\nP0420\n...'}
-                value={obdCodes.join('\n')}
-                onChange={e => setObdCodes(e.target.value.split('\n').filter(Boolean))}
-                className="w-full bg-gray-700 text-white rounded-lg px-3 py-2 text-sm font-mono border border-gray-600 focus:border-blue-500 focus:outline-none"
-              />
-              {obdCodes.length > 0 && (
-                <div className="mt-2 text-yellow-400 text-sm font-semibold">
-                  ⚠️ {obdCodes.length} {t.obd.faultsFound}
-                </div>
-              )}
-              {obdCodes.length === 0 && (
-                <div className="mt-2 text-green-400 text-sm">✅ {t.obd.noFaults}</div>
-              )}
-            </div>
-          </div>
+          <OBDStepPanel
+            vehicleType={vehicle.vehicleType}
+            obdInfo={obdInfo}
+            obdCodes={obdCodes}
+            setObdCodes={setObdCodes}
+            obdLiveData={obdLiveData}
+            setObdLiveData={setObdLiveData}
+            obdConnected={obdConnected}
+            setObdConnected={setObdConnected}
+            obdDeviceName={obdDeviceName}
+            setObdDeviceName={setObdDeviceName}
+            language={language}
+            t={t}
+          />
         );
-
       case 'fraud':
         return (
           <div className="space-y-4">
