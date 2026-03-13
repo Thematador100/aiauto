@@ -295,3 +295,76 @@ router.delete('/:id', authenticateToken, async (req, res) => {
 });
 
 export default router;
+
+/**
+ * GET /api/inspections/stats/dashboard
+ * Get inspector dashboard stats: earnings, inspection counts, performance metrics
+ */
+router.get('/stats/dashboard', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Inspection counts by period
+    const countsResult = await query(`
+      SELECT
+        COUNT(*) FILTER (WHERE created_at >= NOW() - INTERVAL '1 day')   AS today,
+        COUNT(*) FILTER (WHERE created_at >= date_trunc('week', NOW()))   AS this_week,
+        COUNT(*) FILTER (WHERE created_at >= date_trunc('month', NOW()))  AS this_month,
+        COUNT(*)                                                           AS all_time,
+        COUNT(*) FILTER (WHERE vehicle_type = 'Commercial')               AS commercial_count,
+        COUNT(*) FILTER (WHERE vehicle_type = 'RV')                       AS rv_count,
+        COUNT(*) FILTER (WHERE vehicle_type = 'Classic')                  AS classic_count,
+        COUNT(*) FILTER (WHERE vehicle_type = 'EV')                       AS ev_count
+      FROM inspections
+      WHERE user_id = $1
+    `, [userId]);
+
+    // Earnings from inspector_sales
+    const earningsResult = await query(`
+      SELECT
+        COALESCE(SUM(inspector_revenue) FILTER (WHERE created_at >= NOW() - INTERVAL '1 day'), 0)  AS today_cents,
+        COALESCE(SUM(inspector_revenue) FILTER (WHERE created_at >= date_trunc('week', NOW())), 0)  AS week_cents,
+        COALESCE(SUM(inspector_revenue) FILTER (WHERE created_at >= date_trunc('month', NOW())), 0) AS month_cents,
+        COALESCE(SUM(inspector_revenue), 0)                                                         AS alltime_cents
+      FROM inspector_sales
+      WHERE user_id = $1 AND payment_status = 'completed'
+    `, [userId]);
+
+    // Recent 5 inspections for activity feed
+    const recentResult = await query(`
+      SELECT id, vehicle_year, vehicle_make, vehicle_model, vehicle_type, created_at
+      FROM inspections
+      WHERE user_id = $1
+      ORDER BY created_at DESC
+      LIMIT 5
+    `, [userId]);
+
+    const counts = countsResult.rows[0];
+    const earnings = earningsResult.rows[0];
+
+    res.json({
+      inspections: {
+        today:      parseInt(counts.today),
+        thisWeek:   parseInt(counts.this_week),
+        thisMonth:  parseInt(counts.this_month),
+        allTime:    parseInt(counts.all_time),
+        byType: {
+          commercial: parseInt(counts.commercial_count),
+          rv:         parseInt(counts.rv_count),
+          classic:    parseInt(counts.classic_count),
+          ev:         parseInt(counts.ev_count),
+        }
+      },
+      earnings: {
+        today:    (parseInt(earnings.today_cents)   / 100).toFixed(2),
+        thisWeek: (parseInt(earnings.week_cents)    / 100).toFixed(2),
+        thisMonth:(parseInt(earnings.month_cents)   / 100).toFixed(2),
+        allTime:  (parseInt(earnings.alltime_cents) / 100).toFixed(2),
+      },
+      recentInspections: recentResult.rows,
+    });
+  } catch (error) {
+    console.error('[Inspections] Dashboard stats error:', error);
+    res.status(500).json({ error: 'Failed to retrieve dashboard stats' });
+  }
+});

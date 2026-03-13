@@ -15,8 +15,9 @@ import InspectionWizard from './InspectionWizard';
 import { RentalFleetModule } from './RentalFleetModule';
 import { ResellerDashboard } from './ResellerDashboard';
 import LanguageToggle from './LanguageToggle';
+import { CertificationCenter } from './CertificationCenter';
 
-type View = 'Dashboard' | 'Inspection' | 'Wizard' | 'Diagnostics' | 'Assistant' | 'Profile' | 'Manual' | 'Finalize' | 'Report' | 'Referral' | 'Fleet' | 'Reseller';
+type View = 'Dashboard' | 'Inspection' | 'Wizard' | 'Diagnostics' | 'Assistant' | 'Profile' | 'Manual' | 'Finalize' | 'Report' | 'Referral' | 'Fleet' | 'Reseller' | 'Certification';
 
 interface MainAppProps {
   user: User;
@@ -57,7 +58,7 @@ export const MainApp: React.FC<MainAppProps> = ({ user, onLogout }) => {
       setInspectionState(null);
       setCompletedReport(null);
       setView('Dashboard');
-    } else if (tab === 'Diagnostics' || tab === 'Assistant' || tab === 'Profile' || tab === 'Manual' || tab === 'Referral' || tab === 'Fleet' || tab === 'Reseller') {
+    } else if (tab === 'Diagnostics' || tab === 'Assistant' || tab === 'Profile' || tab === 'Manual' || tab === 'Referral' || tab === 'Fleet' || tab === 'Reseller' || tab === 'Certification') {
       // Do NOT clear inspectionState — Diagnostics needs vehicleType from current inspection
       setView(tab as View);
     } else if (tab === 'Inspection') {
@@ -149,6 +150,8 @@ export const MainApp: React.FC<MainAppProps> = ({ user, onLogout }) => {
         return <ResellerDashboard token={token || ''} />;
       case 'Referral':
         return <ReferralDashboard />;
+      case 'Certification':
+        return <CertificationCenter onClose={() => { setView('Dashboard'); setActiveTab('Dashboard'); }} onCertified={() => { /* badge stored in localStorage by CertificationCenter */ }} />;
       default:
         return <CustomerDashboard user={user} onNewInspection={handleNewInspection} onViewReport={(r) => { setCompletedReport(r); setView('Report'); }} />;
     }

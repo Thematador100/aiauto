@@ -389,6 +389,60 @@ const InspectionWizard: React.FC<WizardProps> = ({ onComplete, onCancel }) => {
     setDecoding(false);
   };
 
+  // ── Step validation: what must be done before advancing ──────────────────
+  const canAdvance = (): boolean => {
+    switch (stepKey) {
+      case 'vehicle':
+        return !!(vehicle.make && vehicle.model && vehicle.year && vehicle.vehicleType);
+      case 'exterior':
+      case 'interior':
+      case 'mechanical': {
+        const items = getChecklistItems(stepKey);
+        if (items.length === 0) return true;
+        const marked = items.filter((item: string) => checklist[item] !== undefined).length;
+        return marked >= Math.ceil(items.length * 0.8);
+      }
+      case 'obd':
+      case 'fraud':
+      case 'report':
+        return true;
+      default:
+        return true;
+    }
+  };
+
+  // ── Step instructions shown at top of each step ────────────────────────────
+  const stepInstruction: Record<Step, { title: string; body: string }> = {
+    vehicle: {
+      title: 'Step 1 of 7 — Vehicle Identification',
+      body: 'Enter the 17-digit VIN and tap Decode to auto-fill vehicle details. Confirm the vehicle type. Make, model, and year are required before you can continue.',
+    },
+    exterior: {
+      title: 'Step 2 of 7 — Exterior Inspection',
+      body: 'Walk completely around the vehicle. Mark each item Pass ✅, Fail ❌, or N/A. If you mark Fail, add a note. At least 80% of items must be marked to continue.',
+    },
+    interior: {
+      title: 'Step 3 of 7 — Interior Inspection',
+      body: 'Inspect the cabin, seats, dashboard, all controls, and electronics. Mark each item. Add notes on any failures.',
+    },
+    mechanical: {
+      title: 'Step 4 of 7 — Mechanical & Engine',
+      body: 'Inspect the engine bay, fluids, belts, hoses, and undercarriage. Mark each item. Add notes on any failures.',
+    },
+    obd: {
+      title: 'Step 5 of 7 — OBD Diagnostics',
+      body: 'Plug your OBDLink MX+ into the vehicle\'s OBD-II port, then tap Connect. If you cannot connect, enter fault codes manually. You may skip this step if the vehicle has no OBD-II port.',
+    },
+    fraud: {
+      title: 'Step 6 of 7 — Fraud & AI Detection',
+      body: 'Check each fraud indicator. Upload photos for AI damage analysis. Use Advanced Tools for premium checks (paint thickness, battery, brake fluid) if ordered by the customer.',
+    },
+    report: {
+      title: 'Step 7 of 7 — Review & Send Report',
+      body: 'Review the inspection summary below. Enter the customer\'s name and email to send the report. Tap Finish to save and generate the PDF.',
+    },
+  };
+
   const handleNext = () => {
     if (currentStep < totalSteps - 1) setCurrentStep(s => s + 1);
   };
@@ -781,6 +835,11 @@ const InspectionWizard: React.FC<WizardProps> = ({ onComplete, onCancel }) => {
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4 pb-24">
+        {/* Step instruction banner */}
+        <div className="mb-4 bg-blue-950/40 border border-blue-800/40 rounded-xl p-3">
+          <p className="text-blue-300 font-bold text-xs uppercase tracking-wide mb-0.5">{stepInstruction[stepKey].title}</p>
+          <p className="text-blue-200/80 text-xs leading-relaxed">{stepInstruction[stepKey].body}</p>
+        </div>
         {renderStepContent()}
       </div>
 
@@ -795,12 +854,22 @@ const InspectionWizard: React.FC<WizardProps> = ({ onComplete, onCancel }) => {
           </button>
         )}
         {currentStep < totalSteps - 1 ? (
-          <button
-            onClick={handleNext}
-            className="flex-1 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold transition-colors"
-          >
-            {t.wizard.next}
-          </button>
+          <div className="flex-1 flex flex-col gap-1.5">
+            {!canAdvance() && (
+              <p className="text-yellow-400 text-xs text-center font-medium">
+                {stepKey === 'vehicle'
+                  ? '⚠️ Make, model, year and vehicle type required'
+                  : '⚠️ Please mark at least 80% of checklist items before continuing'}
+              </p>
+            )}
+            <button
+              onClick={handleNext}
+              disabled={!canAdvance()}
+              className="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-700 disabled:text-gray-500 text-white rounded-xl font-bold transition-colors"
+            >
+              {t.wizard.next}
+            </button>
+          </div>
         ) : (
           <button
             onClick={handleFinish}
