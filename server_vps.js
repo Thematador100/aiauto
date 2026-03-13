@@ -200,7 +200,12 @@ app.use('/api/referral', referralRoutes); // Referral system — public track + 
 app.use('/api/tts', authenticateToken, requireActiveLicense, ttsRoutes); // Text-to-speech
 app.use('/api', authenticateToken, requireActiveLicense, aiRoutes); // AI routes: /api/analyze-dtc, /api/generate-report
 
-// ── Serve built frontend in production ──────────────────────────────────────
+// ── Serve uploaded files (local storage fallback for Cloudinary) ────────────
+const uploadsDir = join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
+app.use('/uploads', express.static(uploadsDir));
+
+// ── Serve built frontend in production ──────────────────────────────────────────
 const frontendDist = join(__dirname, 'public');
 if (process.env.NODE_ENV === 'production' && fs.existsSync(frontendDist)) {
   // Serve static assets with caching, but not index.html

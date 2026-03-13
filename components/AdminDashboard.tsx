@@ -122,11 +122,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
   const [showExpiryModal, setShowExpiryModal] = useState(false);
   const [expiryDate, setExpiryDate] = useState('');
   const [actionMessage, setActionMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
-  const [usageData, setUsageData] = useState<UsageRecord[]>([]);
+   const [usageData, setUsageData] = useState<UsageRecord[]>([]);
   const [pendingUsers, setPendingUsers] = useState<PendingUser[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
   const [expiringCount, setExpiringCount] = useState(0);
-
+  const [salesData, setSalesData] = useState<{sales: any[], totals: any} | null>(null);
+  const [salesLoading, setSalesLoading] = useState(false);
+  const [activityData, setActivityData] = useState<any[]>([]);
+  const [activityLoading, setActivityLoading] = useState(false);
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || 'https://auto.srv1171019.hstgr.cloud';
 
   // Fetch platform statistics
@@ -469,6 +472,74 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
     }
   };
 
+  // Fetch sales data
+  const fetchSales = async () => {
+    setSalesLoading(true);
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const response = await fetch(`${BACKEND_URL}/api/admin/sales?limit=100`, {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setSalesData(data);
+      }
+    } catch (error) {
+      showMessage('error', 'Failed to load sales data');
+    } finally {
+      setSalesLoading(false);
+    }
+  };
+
+  // Fetch activity log (recent inspections + logins)
+  const fetchActivity = async () => {
+    setActivityLoading(true);
+    try {
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      const [inspRes, usersRes] = await Promise.all([
+        fetch(`${BACKEND_URL}/api/admin/inspections?limit=50`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        }),
+        fetch(`${BACKEND_URL}/api/admin/users?limit=50`, {
+          headers: { 'Authorization': `Bearer ${token}` },
+        }),
+      ]);
+      const activities: any[] = [];
+      if (inspRes.ok) {
+        const data = await inspRes.json();
+        (data.inspections || []).forEach((insp: any) => {
+          activities.push({
+            type: 'inspection',
+            icon: '🔍',
+            label: `Inspection completed`,
+            detail: `${insp.vehicle_type || 'Vehicle'} — ${insp.email || insp.user_id}`,
+            time: insp.created_at,
+          });
+        });
+      }
+      if (usersRes.ok) {
+        const data = await usersRes.json();
+        (data.users || []).slice(0, 20).forEach((u: any) => {
+          if (u.last_login_at) {
+            activities.push({
+              type: 'login',
+              icon: '👤',
+              label: `User login`,
+              detail: u.email,
+              time: u.last_login_at,
+            });
+          }
+        });
+      }
+      activities.sort((a, b) => new Date(b.time).getTime() - new Date(a.time).getTime());
+      setActivityData(activities.slice(0, 60));
+    } catch (error) {
+      showMessage('error', 'Failed to load activity data');
+    } finally {
+      setActivityLoading(false);
+    }
+  };
+
   // Approve a pending user
   const handleApproveUser = async (userId: string, licenseDurationMonths: number = 12) => {
     setIsLoading(true);
@@ -508,6 +579,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
       fetchUsage();
     } else if (activeTab === 'pending') {
       fetchPending();
+    } else if (activeTab === 'sales') {
+      fetchSales();
+    } else if (activeTab === 'activity') {
+      fetchActivity();
     }
   }, [activeTab, filterType, filterLicense]);
 
@@ -1094,16 +1169,77 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
               </div>
             )}
 
-            {/* Recent Sales Activity */}
+            {/* Real Sales Transaction Log */}
             <div className="bg-dark-card border border-dark-border rounded-lg p-6">
-              <h3 className="text-xl font-bold text-light-text mb-4">Recent Sales Activity</h3>
-              <div className="text-center py-8 text-medium-text">
-                <div className="text-4xl mb-3">📊</div>
-                <p>Sales tracking and transaction history</p>
-                <p className="text-sm mt-2 text-yellow-400">
-                  💡 Detailed sales logs and analytics coming soon
-                </p>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl font-bold text-light-text">Sales Transaction Log</h3>
+                <button onClick={fetchSales} className="px-3 py-1.5 bg-dark-border rounded-lg text-medium-text hover:text-light-text text-sm transition-colors">🔄 Refresh</button>
               </div>
+              {salesLoading ? (
+                <div className="text-center py-8 text-medium-text">Loading sales data...</div>
+              ) : salesData && salesData.sales.length > 0 ? (
+                <>
+                  {/* Totals bar */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                    <div className="bg-dark-bg rounded-lg p-3 text-center">
+                      <div className="text-xs text-medium-text mb-1">Total Sales</div>
+                      <div className="text-lg font-bold text-light-text">{salesData.totals.totalSales}</div>
+                    </div>
+                    <div className="bg-dark-bg rounded-lg p-3 text-center">
+                      <div className="text-xs text-medium-text mb-1">Total Revenue</div>
+                      <div className="text-lg font-bold text-green-400">${(salesData.totals.totalRevenue / 100).toLocaleString()}</div>
+                    </div>
+                    <div className="bg-dark-bg rounded-lg p-3 text-center">
+                      <div className="text-xs text-medium-text mb-1">Revenue Share Paid</div>
+                      <div className="text-lg font-bold text-blue-400">${(salesData.totals.totalRevenueShare / 100).toLocaleString()}</div>
+                    </div>
+                    <div className="bg-dark-bg rounded-lg p-3 text-center">
+                      <div className="text-xs text-medium-text mb-1">Pending Payouts</div>
+                      <div className="text-lg font-bold text-yellow-400">${(salesData.totals.pendingRevenueShare / 100).toLocaleString()}</div>
+                    </div>
+                  </div>
+                  {/* Table */}
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="border-b border-dark-border text-medium-text">
+                          <th className="text-left py-2 pr-4">Date</th>
+                          <th className="text-left py-2 pr-4">Inspector</th>
+                          <th className="text-left py-2 pr-4">Plan</th>
+                          <th className="text-right py-2 pr-4">Amount</th>
+                          <th className="text-right py-2 pr-4">Rev Share</th>
+                          <th className="text-left py-2">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {salesData.sales.map((sale: any, i: number) => (
+                          <tr key={i} className="border-b border-dark-border/50 hover:bg-dark-bg/50 transition-colors">
+                            <td className="py-2 pr-4 text-medium-text">{new Date(sale.created_at).toLocaleDateString()}</td>
+                            <td className="py-2 pr-4 text-light-text">{sale.email || sale.company_name || sale.user_id}</td>
+                            <td className="py-2 pr-4">
+                              <span className="px-2 py-0.5 rounded-full text-xs bg-primary/20 text-primary">{sale.plan_type || 'Pro'}</span>
+                            </td>
+                            <td className="py-2 pr-4 text-right text-green-400 font-semibold">${((sale.sale_amount || 0) / 100).toLocaleString()}</td>
+                            <td className="py-2 pr-4 text-right text-blue-400">${((sale.revenue_share_amount || 0) / 100).toLocaleString()}</td>
+                            <td className="py-2">
+                              <span className={`px-2 py-0.5 rounded-full text-xs ${
+                                sale.revenue_share_status === 'paid' ? 'bg-green-500/20 text-green-400' :
+                                sale.revenue_share_status === 'pending' ? 'bg-yellow-500/20 text-yellow-400' :
+                                'bg-gray-500/20 text-gray-400'
+                              }`}>{sale.revenue_share_status || 'N/A'}</span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center py-8 text-medium-text">
+                  <div className="text-3xl mb-2">💰</div>
+                  <p>No sales recorded yet. Sales will appear here as inspectors sign up.</p>
+                </div>
+              )}
             </div>
 
             {/* Revenue Breakdown */}
@@ -1146,17 +1282,40 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ user, onLogout }
         {/* Activity Log Tab */}
         {activeTab === 'activity' && (
           <div>
-            <h2 className="text-2xl font-bold text-light-text mb-6">Activity Log</h2>
-            <div className="bg-dark-card border border-dark-border rounded-lg p-12 text-center">
-              <div className="text-4xl mb-4">📊</div>
-              <div className="text-light-text font-semibold mb-2">Activity Tracking</div>
-              <div className="text-medium-text">
-                View recent admin actions, user logins, and platform activity.<br/>
-                Track changes, monitor usage, and ensure platform health.
-              </div>
-              <div className="mt-6 text-sm text-yellow-400">
-                💡 Activity logs are recorded in the database - UI coming soon
-              </div>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-light-text">Activity Log</h2>
+              <button onClick={fetchActivity} className="px-4 py-2 bg-dark-card border border-dark-border rounded-lg text-medium-text hover:text-light-text transition-colors text-sm">🔄 Refresh</button>
+            </div>
+            <div className="bg-dark-card border border-dark-border rounded-lg p-6">
+              {activityLoading ? (
+                <div className="text-center py-8 text-medium-text">Loading activity...</div>
+              ) : activityData.length > 0 ? (
+                <div className="space-y-2">
+                  {activityData.map((item: any, i: number) => (
+                    <div key={i} className="flex items-start gap-3 py-2.5 border-b border-dark-border/50 hover:bg-dark-bg/30 rounded px-2 transition-colors">
+                      <span className="text-xl flex-shrink-0 mt-0.5">{item.icon}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-light-text text-sm font-medium">{item.label}</span>
+                          <span className={`px-1.5 py-0.5 rounded text-xs ${
+                            item.type === 'inspection' ? 'bg-blue-500/20 text-blue-400' : 'bg-gray-500/20 text-gray-400'
+                          }`}>{item.type}</span>
+                        </div>
+                        <div className="text-medium-text text-xs truncate">{item.detail}</div>
+                      </div>
+                      <div className="text-medium-text text-xs flex-shrink-0">
+                        {new Date(item.time).toLocaleString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-medium-text">
+                  <div className="text-3xl mb-3">📊</div>
+                  <p className="font-medium text-light-text mb-1">No activity yet</p>
+                  <p className="text-sm">Inspections and logins will appear here as the platform is used.</p>
+                </div>
+              )}
             </div>
           </div>
         )}

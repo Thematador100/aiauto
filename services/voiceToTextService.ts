@@ -124,18 +124,35 @@ class VoiceToTextService {
   }
 
   /**
-   * Convert audio file to text (using external API)
+   * Convert audio file to text using OpenAI Whisper via backend proxy
    */
   async transcribeAudioFile(audioBlob: Blob): Promise<string> {
-    // In production, this would use a service like:
-    // - Google Speech-to-Text API
-    // - AWS Transcribe
-    // - Azure Speech Services
-    // - OpenAI Whisper API
+    try {
+      const BACKEND_URL = (import.meta as any).env?.VITE_BACKEND_URL || 'https://auto.srv1171019.hstgr.cloud';
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
 
-    // For now, return placeholder
-    console.log('Audio file transcription not yet implemented');
-    return 'Audio transcription coming soon...';
+      const formData = new FormData();
+      // Whisper accepts webm, mp4, mp3, wav, m4a
+      const ext = audioBlob.type.includes('webm') ? 'webm' : 'wav';
+      formData.append('audio', audioBlob, `recording.${ext}`);
+
+      const response = await fetch(`${BACKEND_URL}/api/tts/transcribe`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.error || 'Transcription failed');
+      }
+
+      const data = await response.json();
+      return data.transcript || '';
+    } catch (error: any) {
+      console.error('Whisper transcription error:', error);
+      throw new Error(error.message || 'Failed to transcribe audio');
+    }
   }
 }
 
