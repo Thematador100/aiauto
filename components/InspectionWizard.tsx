@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLanguage } from '../i18n/LanguageContext';
 type VehicleType = 'Standard' | 'Truck' | 'EV' | 'Commercial' | 'RV' | 'Classic' | 'Motorcycle';
 import { VEHICLE_INSPECTION_TEMPLATES } from '../constants';
+import AdvancedTools, { AdvancedToolsResults } from './AdvancedTools';
 
 interface WizardProps {
   onComplete: (data: WizardData) => void;
@@ -23,6 +24,7 @@ export interface WizardData {
   notes: Record<string, string>;
   obdCodes: string[];
   fraudFlags: string[];
+  advancedToolsResults?: AdvancedToolsResults;
   customerEmail: string;
   customerName: string;
   overallCondition: 'excellent' | 'good' | 'fair' | 'poor';
@@ -316,6 +318,7 @@ const InspectionWizard: React.FC<WizardProps> = ({ onComplete, onCancel }) => {
   const [obdConnected, setObdConnected] = useState(false);
   const [obdDeviceName, setObdDeviceName] = useState('');
   const [fraudFlags, setFraudFlags] = useState<string[]>([]);
+  const [advancedToolsResults, setAdvancedToolsResults] = useState<AdvancedToolsResults>({});
   const [customerEmail, setCustomerEmail] = useState('');
   const [customerName, setCustomerName] = useState('');
   const [overallCondition, setOverallCondition] = useState<'excellent' | 'good' | 'fair' | 'poor'>('good');
@@ -401,6 +404,7 @@ const InspectionWizard: React.FC<WizardProps> = ({ onComplete, onCancel }) => {
       notes,
       obdCodes,
       fraudFlags,
+      advancedToolsResults,
       customerEmail,
       customerName,
       overallCondition,
@@ -628,6 +632,16 @@ const InspectionWizard: React.FC<WizardProps> = ({ onComplete, onCancel }) => {
                 {fraudFlags.includes(flag.key) && <span className="ml-auto text-red-400">⚠️ FLAGGED</span>}
               </button>
             ))}
+
+            {/* Advanced Tools — optional premium add-ons */}
+            <div className="mt-6 pt-4 border-t border-gray-700">
+              <AdvancedTools
+                vin={vehicle.vin}
+                vehicleType={vehicle.vehicleType}
+                mileage={vehicle.mileage}
+                onResultsChange={setAdvancedToolsResults}
+              />
+            </div>
           </div>
         );
 

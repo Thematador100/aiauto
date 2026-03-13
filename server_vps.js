@@ -10,6 +10,7 @@ import photoRoutes from './routes/photos.js';
 import aiRoutes from './routes/ai.js';
 import reportRoutes from './routes/reports.js';
 import fraudRoutes from './routes/fraud.js';
+import advancedToolsRoutes from './routes/advancedTools.js';
 import commonIssuesRoutes from './routes/commonIssues.js';
 import adminRoutes from './routes/admin.js';
 import ttsRoutes from './routes/tts.js';
@@ -192,6 +193,7 @@ app.use('/api/inspections', authenticateToken, requireActiveLicense, inspectionR
 app.use('/api/photos', authenticateToken, requireActiveLicense, photoRoutes);
 app.use('/api/reports', authenticateToken, requireActiveLicense, reportRoutes);
 app.use('/api/fraud', authenticateToken, requireActiveLicense, fraudRoutes);
+app.use('/api/advanced', authenticateToken, requireActiveLicense, advancedToolsRoutes); // Optional premium tools: paint thickness, battery, brake fluid, borescope, NMVTIS
 app.use('/api/common-issues', commonIssuesRoutes); // Public reference data
 app.use('/api/admin', adminRoutes); // Admin routes have their own auth middleware
 app.use('/api/referral', referralRoutes); // Referral system — public track + auth dashboard
