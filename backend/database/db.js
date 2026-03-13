@@ -1,2 +1,4 @@
 // Compatibility shim — re-exports from the canonical database module
-export { query, pool } from '../config/database.js';
+export { query, getClient } from '../config/database.js';
+import pool from '../config/database.js';
+export { pool };
